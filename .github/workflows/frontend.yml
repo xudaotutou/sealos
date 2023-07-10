@@ -39,12 +39,6 @@ env:
 jobs:
   image-prebuild:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        module:
-          [ 
-            deps
-          ]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -61,26 +55,14 @@ jobs:
           else
             echo "isTag=false" >> "$GITHUB_OUTPUT"
           fi
-      - name: Prepare
-        id: prepare
-        run: |
-          bash ./scripts/resolve-tag-image.sh "${{ inputs.push_image }}" "${{ steps.check_tag.outputs.isTag }}"  "${{ inputs.push_image_tag }}"
-      - name: Extract module name
-        id: module_name
-        run: |
-          MODULE_NAME=$(basename ${{ matrix.module }})
-          echo "MODULE_NAME=${MODULE_NAME}" >> $GITHUB_ENV
-
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
         with:
           images: |
-            ghcr.io/${{ github.repository_owner }}/sealos-${{ env.MODULE_NAME }}-frontend
+            ghcr.io/${{ github.repository_owner }}/sealos-frontend-deps
           tags: |
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
             type=raw,value=dev,enable=true
-            type=raw,value=${{ steps.prepare.outputs.tag_name }},enable=true
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
