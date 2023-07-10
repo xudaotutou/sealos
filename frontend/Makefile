@@ -28,31 +28,39 @@ buildTargets := \
 	providers/costcenter \
 	providers/dbprovider \
 	providers/applaunchpad
-buildTargets-all := $(addprefix build-,$(buildTargets))
+buildTargets-all := $(addprefix image-build-,$(buildTargets))
 # Generate phony targets using foreach and eval.
-$(foreach target,$(buildTargets),$(eval .PHONY: build-$($(target))))
+$(foreach target,$(buildTargets),$(eval .PHONY: image-build-$($(target))))
 $(foreach target,$(buildTargets),$(eval .PHONY: dev-$($(target))))
-.PHONY: all dev-desktop prebuild
+.PHONY: all dev-desktop image-prebuild deps-build
 
-all: prebuild-image $(buildTargets-all)
-
+all: image-prebuild $(buildTargets-all)
+all-publish: image-prebuild $(addprefix image-publish-,$(buildTargets))
 fetch-deps: pnpm-lock.yaml
 	pnpm fetch
-build-packages: fetch-deps
+deps-build: fetch-deps
 	pnpm -r --offline --filter=./packages/* install
 	pnpm -r --offline --filter=./packages/* build
-dev-providers/%: build-packages
+dev-providers/%: deps-build
 	pnpm -r --offline --filter=./providers/$* install
 	pnpm -r --offline --filter=./providers/$* dev
-dev-%: build-packages
+dev-%: deps-build
 	pnpm -r --offline --filter=$* install
 	pnpm -r --offline --filter=$* dev
 # prebuild-image-for -j
-prebuild-image: pnpm-lock.yaml
+
+
+
+image-prebuild: pnpm-lock.yaml
 	docker build --target deps . -t $(imageOwner)sealos-deps:dev
 
-build-providers/%: prebuild-image
-	docker build -t $(imageOwner)sealos-$*:dev --build-arg path=providers/$* --build-arg name=$* . 
-build-%: prebuild-image
-	docker build -t $(imageOwner)sealos-$*:dev --build-arg path=$* --build-arg name=$* . 
+image-build-providers/%: image-prebuild
+	docker build -t $(imageOwner)sealos-$*-frontend:dev --build-arg path=providers/$* --build-arg name=$* . 
+image-build-%: image-prebuild
+	docker build -t $(imageOwner)sealos-$*-frontend:dev --build-arg path=$* --build-arg name=$* . 
+
+image-publish-providers/%: image-build-providers/%
+	docker push $(imageOwner)sealos-$*-frontend:dev
+image-publish-%: image-build-%
+	docker push $(imageOwner)sealos-$*-frontend:dev
 # Default target to run all builds.

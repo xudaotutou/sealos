@@ -10,6 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!enablePassword()) {
       throw new Error('PASSWORD_SALT is not defined')
     }
+	console.log(req.body)
     const { user: name, password } = req.body;
     if (!strongPassword(password)) {
       return jsonRes(res, {
