@@ -21,7 +21,7 @@ WORKDIR /app
 # Install dependencies based on the preferred package manager
 COPY package.json pnpm-lock.yaml* ./
 RUN \
-  [ -f pnpm-lock.yaml ] && pnpm install || \
+  [ -f pnpm-lock.yaml ] && pnpm fetch || \
   (echo "Lockfile not found." && exit 1)
 
 # Rebuild the source code only when needed
@@ -36,9 +36,7 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED 1
 
 RUN npm config set registry https://registry.npmmirror.com/
-RUN npm install -g pnpm 
-RUN pnpm install
-RUN pnpm run build
+RUN npm install -g pnpm && pnpm install --offline --filter=costcenter && pnpm lerna run build --scope=costcenter
 
 # Production image, copy all the files and run next
 FROM node:current-alpine AS runner
@@ -58,13 +56,13 @@ RUN apk add curl \
 
 # You only need to copy next.config.js if you are NOT using the default configuration
 # COPY --from=builder /app/next.config.js ./
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/public ./providers/costcenter/public
+COPY --from=builder /app/package.json ./providers/costcenter/package.json
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/providers/costcenter/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/providers/costcenter/.next/static ./providers/costcenter/.next/static
 
 USER nextjs
 
