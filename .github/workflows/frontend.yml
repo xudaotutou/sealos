@@ -183,7 +183,6 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           cache-from: type=gha
-          cache-to: type=gha,mode=max
           build-args: |
             name=${{ env.MODULE_NAME }}
             path=${{ matrix.module }}
