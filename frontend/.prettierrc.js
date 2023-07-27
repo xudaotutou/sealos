@@ -16,6 +16,6 @@ module.exports = {
     insertPragma: false,
     proseWrap: 'preserve',
     htmlWhitespaceSensitivity: 'css',
-    endOfLine: 'lf'
+    // endOfLine: 'lf'
 };
   

@@ -1,6 +1,7 @@
 import * as k8s from '@kubernetes/client-node';
 import http from 'http';
 import * as yaml from 'js-yaml';
+import { get_k8s_username } from '../db/user';
 
 export function K8sApi(config: string): k8s.KubeConfig {
   const kc = new k8s.KubeConfig();
@@ -37,7 +38,15 @@ export function K8sApi(config: string): k8s.KubeConfig {
   }
   return kc;
 }
-
+export function switchNamespace(oldkc: k8s.KubeConfig, namespace: string) {
+  const kc = new k8s.KubeConfig();
+  oldkc.getContexts();
+  kc.loadFromOptions({
+    ...oldkc,
+    contexts: [{ ...oldkc.contexts[0], namespace: namespace }]
+  });
+  return kc;
+}
 export async function ListPods(
   kc: k8s.KubeConfig,
   ns: string

@@ -6,7 +6,6 @@ async function connectToNSCollection() {
   return collection;
 }
 export enum UserRole {
-  Default,
   Owner,
   Manager,
   Developer
@@ -16,6 +15,7 @@ export enum NSType {
   Team,
   Private
 }
+
 export type NSUser = {
   username: string;
   role: UserRole;
@@ -30,15 +30,15 @@ export type Namespace = {
   nstype: NSType;
 };
 
-export async function getUsers({ namespace: id }: { namespace: string }) {
+export async function getNSUsers({ namespace: id }: { namespace: string }) {
   const collection = await connectToNSCollection();
   let result = await collection.findOne({ id });
   const users = result?.users || [];
   return users;
 }
-export async function addUser({ namespace, user }: { namespace: string; user: NSUser }) {
+export async function addNSUser({ namespace, user }: { namespace: string; user: NSUser }) {
   const collection = await connectToNSCollection();
-  const result = await collection.updateOne(
+  const result = await collection.findOneAndUpdate(
     {
       id: namespace
     },
@@ -48,7 +48,7 @@ export async function addUser({ namespace, user }: { namespace: string; user: NS
       }
     }
   );
-  return result.acknowledged;
+  return result.value;
 }
 export async function modifyRole({ namespace, user }: { namespace: string; user: NSUser }) {
   const collection = await connectToNSCollection();
@@ -63,34 +63,47 @@ export async function modifyRole({ namespace, user }: { namespace: string; user:
       }
     }
   );
-  return result.acknowledged;
+  return result.value;
 }
-export async function removeUser({ namespace, username }: { namespace: string; username: string }) {
-  const collection = await connectToNSCollection();
-  collection.findOneAndUpdate(
-    {
-      id: namespace
-    },
-    {
-      $pull: {
-        users: {
-          username
-        }
-      }
-    }
-  );
-}
-export async function createNamespace({
-  namespace: id,
-  username,
-  nstype
+export async function removeNSUser({
+  namespace,
+  username
 }: {
   namespace: string;
   username: string;
-  nstype: NSType;
 }) {
   const collection = await connectToNSCollection();
-  const user = { username, role: UserRole.Default };
+  return (
+    await collection.findOneAndUpdate(
+      {
+        id: namespace
+      },
+      {
+        $pull: {
+          users: {
+            username
+          }
+        }
+      }
+    )
+  ).value;
+}
+export async function queryNS({ namespace: id }: { namespace: string }) {
+  const collection = await connectToNSCollection();
+  const ns = await collection.findOne({ id });
+  return ns;
+}
+export async function createNS({
+  namespace: id,
+  k8s_username: username,
+  nstype
+}: {
+  namespace: string;
+  k8s_username: string;
+  nstype: NSType;
+}): Promise<null | Namespace> {
+  const collection = await connectToNSCollection();
+  const user = { username, role: UserRole.Developer };
   const ns: Namespace = {
     id,
     users: [],
@@ -101,13 +114,13 @@ export async function createNamespace({
   } else if (nstype === NSType.Private) {
     user.role = UserRole.Owner;
   } else {
-    return false;
+    return null;
   }
   ns.users.push(user);
-  const result = await collection.insertOne(ns);
-  return result.acknowledged;
+  await collection.insertOne(ns);
+  return ns;
 }
-export async function removeNamespace({ namespace: id }: { namespace: string }) {
+export async function removeNS({ namespace: id }: { namespace: string }) {
   const collection = await connectToNSCollection();
   const result = await collection.deleteOne({
     id
@@ -117,10 +130,10 @@ export async function removeNamespace({ namespace: id }: { namespace: string }) 
 
 export async function checkIsOwner({
   namespace: id,
-  username
+  k8s_username: username
 }: {
   namespace: string;
-  username: string;
+  k8s_username: string;
 }) {
   const collection = await connectToNSCollection();
   const result = await collection.findOne({
@@ -135,4 +148,46 @@ export async function checkIsOwner({
     }
   });
   return !!result;
+}
+
+export async function checkInNS({
+  k8s_username: username,
+  namespace
+}: {
+  k8s_username: string;
+  namespace: string;
+}) {
+  const collection = await connectToNSCollection();
+  const result = await collection.findOne({
+    id: namespace,
+    users: {
+      $elemMatch: {
+        username,
+        role: UserRole.Owner
+      }
+    }
+  });
+  return !!result && result.users.length > 0;
+}
+// 检查用户是否有权限管理namespace, role 为被管理的角色
+export async function checkCanManage({
+  namespace: id,
+  k8s_username: username,
+  role
+}: {
+  namespace: string;
+  k8s_username: string;
+  role: UserRole;
+}) {
+  const collection = await connectToNSCollection();
+  const result = await collection.findOne({
+    id,
+    users: {
+      $elemMatch: {
+        username,
+        role: { $in: [UserRole.Owner, UserRole.Manager] }
+      }
+    }
+  });
+  return !!result && result.users.length > 0 && result.users[0].role <= role;
 }

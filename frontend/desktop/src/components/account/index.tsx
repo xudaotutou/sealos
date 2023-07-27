@@ -3,8 +3,8 @@ import request from '@/services/request';
 import useSessionStore from '@/stores/session';
 import download from '@/utils/downloadFIle';
 import { Box, Flex, Image, Stack, Text, UseDisclosureProps } from '@chakra-ui/react';
-import { QueryClient, useQuery } from '@tanstack/react-query';
-import JsYaml from 'js-yaml';
+import { useQuery } from '@tanstack/react-query';
+// import JsYaml from 'js-yaml';
 import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
 import { useContext, useMemo } from 'react';
@@ -21,20 +21,14 @@ export default function Index({ disclosure }: { disclosure: UseDisclosureProps }
   const { delSession, getSession } = useSessionStore();
   const { user, kubeconfig } = getSession();
   const { copyData } = useCopyData();
-  const userKubeConfigId = useMemo(() => {
-    try {
-      let temp = JsYaml.load(kubeconfig);
-      // @ts-ignore
-      return 'ns-' + temp?.users[0]?.name;
-    } catch (error) {
-      return '';
-    }
-  }, [kubeconfig]);
 
   const { data, refetch } = useQuery(['getAccount'], () =>
     request<any, ApiResp<{ balance: number; deductionBalance: number; status: string }>>(
       '/api/account/getAmount'
     )
+  );
+  const { data: nsData } = useQuery(['listNs'], () =>
+    request<any, ApiResp<{ namespaces: any[] }>>('/api/auth/namespace/list')
   );
 
   const balance = useMemo(() => {
@@ -44,6 +38,8 @@ export default function Index({ disclosure }: { disclosure: UseDisclosureProps }
     }
     return real_balance;
   }, [data]);
+  const session = useSessionStore((s) => s.session);
+  const k8s_username = session?.user?.k8s_username || '';
   const { RechargeModal, onOpen } = useRecharge({
     onPaySuccess: () => {
       refetch();
@@ -88,20 +84,19 @@ export default function Index({ disclosure }: { disclosure: UseDisclosureProps }
           <Text color={'#24282C'} fontSize={'20px'} fontWeight={600}>
             {user?.name}
           </Text>
-          <Flex alignItems={'center'} mt="4px" color={'#7B838B'}>
-            <Text>ID: {userKubeConfigId}</Text>
-            <Box ml="4px" onClick={() => copyData(userKubeConfigId)}>
-              <Iconfont iconName="icon-copy2" width={16} height={16} color="#7B838B"></Iconfont>
-            </Box>
+          <Flex alignItems={'center'} mt="4px" color={'#FFFFFF'} py="6px" px={'12px'}>
+            <Box></Box>
+            <Flex>{nsData?.data?.namespaces?.[0] || 'ns' + k8s_username}</Flex>
           </Flex>
           <Stack
             direction={'column'}
             width={'100%'}
             mt="24px"
             bg="rgba(255, 255, 255, 0.6)"
-            borderRadius={'4px'}
+            borderRadius={'8px'}
+            gap={'0px'}
           >
-            <Flex h="54px" alignItems={'center'} borderBottom={'1px solid #0000001A'} p="16px">
+            <Flex alignItems={'center'} borderBottom={'1px solid #0000001A'} p="16px">
               <Text>
                 {t('Balance')}: ￥{formatMoney(balance).toFixed(2)}
               </Text>
@@ -118,21 +113,22 @@ export default function Index({ disclosure }: { disclosure: UseDisclosureProps }
                 </Box>
               )}
             </Flex>
-            <Flex h="54px" alignItems={'center'}>
-              <Text ml="16px">kubeconfig</Text>
-
-              <Box ml="auto" onClick={() => download('kubeconfig.yaml', kubeconfig)}>
-                <Iconfont
-                  iconName="icon-download"
-                  width={16}
-                  height={16}
-                  color="#219BF4"
-                ></Iconfont>
-              </Box>
-              <Box ml="8px" mr="20px" onClick={() => copyData(kubeconfig)}>
-                <Iconfont iconName="icon-copy2" width={16} height={16} color="#219BF4"></Iconfont>
-              </Box>
-            </Flex>
+            {
+              <Flex alignItems={'center'} py="16px">
+                <Text ml="16px">kubeconfig</Text>
+                <Box ml="auto" onClick={() => download('kubeconfig.yaml', kubeconfig)}>
+                  <Iconfont
+                    iconName="icon-download"
+                    width={16}
+                    height={16}
+                    color="#219BF4"
+                  ></Iconfont>
+                </Box>
+                <Box ml="8px" mr="20px" onClick={() => copyData(kubeconfig)}>
+                  <Iconfont iconName="icon-copy2" width={16} height={16} color="#219BF4"></Iconfont>
+                </Box>
+              </Flex>
+            }
           </Stack>
         </Flex>
       </Box>

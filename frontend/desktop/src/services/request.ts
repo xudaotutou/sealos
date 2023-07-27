@@ -15,7 +15,8 @@ request.interceptors.request.use(
 
     const session = useSessionStore.getState().session;
     if (config.url && config.url?.startsWith('/api/')) {
-      _headers['Authorization'] = encodeURIComponent(session?.kubeconfig || '');
+      // _headers['Authorization'] = encodeURIComponent(session?.kubeconfig || '');
+      _headers['Authorization'] = encodeURIComponent(session?.token || '');
     }
 
     if (!config.headers || config.headers['Content-Type'] === '') {

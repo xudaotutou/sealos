@@ -10,10 +10,10 @@ type accountStatus = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const kc = await authSession(req.headers);
-
+    const payload = await authSession(req.headers);
+    if (!payload) return jsonRes(res, { code: 401, message: 'token is vaild' });
     // get user account payment amount
-    const user = kc.getCurrentUser();
+    const user = payload.kc.getCurrentUser();
     if (user === null) {
       return jsonRes(res, { code: 401, message: 'user null' });
     }

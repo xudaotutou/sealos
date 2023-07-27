@@ -736,6 +736,7 @@ export async function getServerSideProps({ req, res, locales }: any) {
     needGithub,
     needWechat
   };
+  console.log(props);
   return {
     props
   };
