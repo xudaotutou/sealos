@@ -27,18 +27,18 @@ export const authSession = async (header: IncomingHttpHeaders) => {
     return Promise.resolve({ kc, user });
   } catch (err) {
     console.error(err);
-    return Promise.reject();
+    return Promise.resolve(null);
   }
 };
-export const verifyJWT: (token: string) => Promise<JWTPayload> = (token: string) =>
+export const verifyJWT: (token: string) => Promise<JWTPayload | null> = (token: string) =>
   new Promise((resolve, reject) => {
     verify(token, jwtSecret, (err, payload) => {
       if (err) {
         console.log(err);
-        reject(null);
+        resolve(null);
       } else if (!payload) {
         console.log('payload is null');
-        reject(null);
+        resolve(null);
       } else {
         resolve(payload as JWTPayload);
       }

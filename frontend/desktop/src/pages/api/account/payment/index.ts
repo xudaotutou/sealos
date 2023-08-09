@@ -15,27 +15,24 @@ export default async function handler(req: NextApiRequest, resp: NextApiResponse
       return jsonRes(resp, { code: 405 });
     }
     const { amount } = req.body;
-    const kc = await authSession(req.headers);
-
-    if (!kc || amount <= 0) {
+    const payload = await authSession(req.headers);
+    if (!payload) return jsonRes(resp, { code: 401, message: 'token verify error' });
+    const kc = payload.kc;
+    if (amount <= 0) {
       return jsonRes(resp, {
         code: 400,
         message: 'Amount cannot be less than 0'
       });
     }
 
-    const kubeUser = kc.getCurrentUser();
-    if (kubeUser === null) {
-      return jsonRes(resp, { code: 401, message: 'user not found' });
-    }
-
+    const k8s_username = payload.user.k8s_username;
     // do payment
     const paymentName = crypto.randomUUID();
-    const namespace = GetUserDefaultNameSpace(kubeUser.name);
+    const namespace = GetUserDefaultNameSpace(k8s_username);
     const form: PaymentForm = {
       namespace,
       paymentName,
-      userId: kubeUser.name,
+      userId: k8s_username,
       amount
     };
 
@@ -46,7 +43,8 @@ export default async function handler(req: NextApiRequest, resp: NextApiResponse
       data: {
         paymentName: paymentName,
         extra: res[0]
-      }
+      },
+      code: 200
     });
   } catch (error) {
     jsonRes(resp, { code: 500, data: error });

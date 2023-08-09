@@ -7,7 +7,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const payload = await authSession(req.headers);
-    if (!payload) return jsonRes(res, { code: 403, message: 'token verify error' });
+    if (!payload) return jsonRes(res, { code: 401, message: 'token verify error' });
     const { user: tokenUser } = payload;
     const k8s_username = tokenUser.k8s_username;
     const nsid = tokenUser.nsid;

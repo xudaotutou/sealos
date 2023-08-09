@@ -96,15 +96,18 @@ export async function queryNS({ namespace: id }: { namespace: string }) {
 export async function createNS({
   namespace: id,
   k8s_username: username,
-  nstype
+  nstype,
+  teamName
 }: {
   namespace: string;
   k8s_username: string;
   nstype: NSType;
+  teamName: string;
 }): Promise<null | Namespace> {
   const collection = await connectToNSCollection();
   const user = { username, role: UserRole.Developer };
   const ns: Namespace = {
+    teamName,
     id,
     users: [],
     nstype

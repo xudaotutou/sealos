@@ -6,7 +6,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const payload = await authSession(req.headers);
-    if (!payload) return jsonRes(res, { code: 403, message: 'token verify error' });
+    if (!payload) return jsonRes(res, { code: 401, message: 'token verify error' });
     const { nsid } = req.body;
     if (!nsid) return jsonRes(res, { code: 400, message: 'nsid is required' });
     if (!(await checkInNS({ namespace: nsid, k8s_username: payload.user.k8s_username })))

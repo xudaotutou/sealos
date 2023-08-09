@@ -71,6 +71,7 @@ export const bindingRole = async (props: {
   nsid: string;
   role: UserRole;
   direct?: boolean;
+  teamName?: string; //  新创建的ns要用这个定义名字
 }) => {
   // add user ns
   // const isManager = await checkCanManage({ namespace: props.nsid, k8s_username: props.host_username, role: props.role })
@@ -95,10 +96,12 @@ export const bindingRole = async (props: {
   const namespace = await queryNS({ namespace: props.nsid });
   let ns_result = null;
   if (!namespace) {
+    if (!props.teamName) return null;
     ns_result = await createNS({
       namespace: props.nsid,
       k8s_username: props.k8s_username,
-      nstype: NSType.Team
+      nstype: NSType.Team,
+      teamName: props.teamName
     });
   } else {
     ns_result = await addNSUser({

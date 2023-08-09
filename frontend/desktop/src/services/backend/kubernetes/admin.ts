@@ -69,9 +69,16 @@ async function setUserKubeconfig(kc: k8s.KubeConfig, uid: string, k8s_username: 
     .then((res) => res.body as UserCR)
     .catch((res) => {
       const body = res.body as StatusCR;
-      if (body.kind === 'Status' && res.body.reason === 'NotFound' && res.body.code === 404) {
+      console.error(k8s_username, res);
+      if (
+        body &&
+        body.kind === 'Status' &&
+        res.body.reason === 'NotFound' &&
+        res.body.code === 404
+      ) {
         return Promise.resolve(body);
       } else {
+        console.error(res);
         return Promise.reject(res);
       }
     });

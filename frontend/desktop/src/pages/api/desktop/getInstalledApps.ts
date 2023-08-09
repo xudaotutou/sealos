@@ -6,13 +6,10 @@ import { TApp, TAppCR, TAppCRList, TAppConfig } from '@/types';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const kc = await authSession(req.headers);
-
-    const kube_user = kc.getCurrentUser();
-    if (kube_user === null) {
-      return jsonRes(res, { code: 403, message: 'user is null' });
-    }
-
+    const payload = await authSession(req.headers);
+    if (!payload) return jsonRes(res, { code: 401, message: 'token is vaild' });
+    const kc = payload.kc;
+    const k8s_username = payload.user.k8s_username;
     const defaultMeta = {
       group: 'app.sealos.io',
       version: 'v1',
@@ -23,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const meta = {
       group: 'app.sealos.io',
       version: 'v1',
-      namespace: GetUserDefaultNameSpace(kube_user.name),
+      namespace: GetUserDefaultNameSpace(k8s_username),
       plural: 'apps'
     };
     const defaultResult = (await ListCRD(kc, defaultMeta)) as {
