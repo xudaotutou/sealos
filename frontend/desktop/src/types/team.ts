@@ -32,3 +32,27 @@ export const generateRequestCrd = (props: CRD['spec']) => {
     return '';
   }
 };
+export enum UserRole {
+  Owner,
+  Manager,
+  Developer
+}
+// 可能是私人的ns, 也可能是团队的ns
+export enum NSType {
+  Team,
+  Private
+}
+
+export type NSUser = {
+  username: string;
+  role: UserRole;
+};
+export type Namespace = {
+  // ns 的名字
+  id: string;
+  // 展示到前端的名字
+  teamName?: string;
+  // 容纳的所有用户
+  users: NSUser[];
+  nstype: NSType;
+};

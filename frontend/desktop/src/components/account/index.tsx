@@ -13,8 +13,7 @@ import {
   Popover,
   PopoverContent,
   PopoverBody,
-  PopoverHeader,
-  useDisclosure
+  PopoverHeader
 } from '@chakra-ui/react';
 import { useQuery } from '@tanstack/react-query';
 // import JsYaml from 'js-yaml';
@@ -26,15 +25,19 @@ import { ApiResp } from '@/types';
 import useRecharge from '@/hooks/useRecharge';
 import { formatMoney } from '@/utils/format';
 import { RechargeEnabledContext } from '@/pages';
+import TeamCenter from '@/components/team/TeamCenter';
+import NsList from '@/components/team/NsList';
 import { UserNamespace } from '@/services/backend/db/user';
-import TeamCenter from '@/components/teamCenter';
+import CreateTeam from '../team/CreateTeam';
 
 const NsMenu = (props: { nsid: string }) => {
-  const { data } = useQuery(['listNs'], () =>
-    request<any, ApiResp<{ namespaces: any[] }>>('/api/auth/namespace/list')
-  );
-  const { copyData } = useCopyData();
-  const namespaces: UserNamespace[] = data?.data?.namespaces || [];
+  const switchTeam = async (ns: UserNamespace) => {
+    // await request.post('/api/auth/namespace/switch',{
+
+    // })
+    // !todo
+    console.log('switchTeam');
+  };
   return (
     <Popover placement="left">
       <PopoverTrigger>
@@ -55,50 +58,17 @@ const NsMenu = (props: { nsid: string }) => {
         shadow={'0px 1.1666667461395264px 2.3333334922790527px 0px rgba(0, 0, 0, 0.2) !important'}
         borderRadius={'8px'}
         p="6px"
+        w="200px"
       >
         <PopoverHeader py={'8px'} px="4px">
           <Flex w="100%" align={'center'}>
             <Text fontSize="12px">Namespace</Text>
-            <TeamCenter />
-            <Image src="/images/material-symbols_add.svg" h="16px" w="16px" />
+            <TeamCenter nsid={props.nsid} />
+            <CreateTeam />
           </Flex>
         </PopoverHeader>
         <PopoverBody px="0" pb="0" pt="4px">
-          <Box>
-            {namespaces.length > 0 &&
-              namespaces.map((ns) => (
-                <Flex
-                  key={ns.id}
-                  align={'center'}
-                  py="6px"
-                  {...(ns.id === props.nsid
-                    ? {
-                        borderRadius: '2px',
-                        background: 'rgba(0, 0, 0, 0.05)'
-                      }
-                    : {})}
-                  px={'4px'}
-                >
-                  <Box
-                    w="8px"
-                    h="8px"
-                    mr="8px"
-                    borderRadius="50%"
-                    bgColor="rgba(71, 200, 191, 1)"
-                  />
-                  <Text fontSize={'12px'}>{ns.id}</Text>
-
-                  <Box onClick={() => copyData(ns.id)} ml="auto" cursor={'pointer'}>
-                    <Iconfont
-                      iconName="icon-copy2"
-                      width={14}
-                      height={14}
-                      color="#5A646E"
-                    ></Iconfont>
-                  </Box>
-                </Flex>
-              ))}
-          </Box>
+          <NsList selected={(ns) => ns.id === props.nsid} click={switchTeam} />
         </PopoverBody>
       </PopoverContent>
     </Popover>
