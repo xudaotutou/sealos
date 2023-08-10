@@ -20,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const namespace = await queryNS({ namespace: nsid });
     if (!namespace) return jsonRes(res, { code: 404, message: 'fail to get ns' });
     const users = namespace.users;
-    if (!users) return jsonRes(res, { code: 404, message: 'fail to get ns' });
+    if (!users) return jsonRes(res, { code: 404, message: 'fail to get users of ns' });
     const results = await Promise.all(
       users.map(async (item) => {
         // 保证每个用户都清掉
@@ -36,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return result;
       })
     );
-    if (!results.every((x) => x)) return jsonRes(res, { code: 404, message: 'fail to remove ns' });
+    if (!results.every((x) => x)) return jsonRes(res, { code: 404, message: 'fail to remove users of ns' });
     const result_ns = await removeNS({ namespace: nsid });
     if (!result_ns) return jsonRes(res, { code: 404, message: 'fail to remove ns' });
     jsonRes(res, { code: 200, message: 'Successfully' });

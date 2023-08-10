@@ -38,10 +38,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         user
       });
       if (!_result || _result.length === 0)
-        return jsonRes(res, { message: 'fail to get owner permission', code: 403 });
+        return jsonRes(res, { message: 'fail to modify team role', code: 403 });
       const unbindingResult = await unbindingRole({ k8s_username, nsid });
       if (!unbindingResult)
-        return jsonRes(res, { message: 'fail to get owner permission', code: 403 });
+        return jsonRes(res, { message: 'fail to unbinding', code: 403 });
       ns_result = unbindingResult.ns_result;
       user_result = unbindingResult.user_result;
     }

@@ -195,11 +195,7 @@ export async function addUserNS({
     },
     {
       $push: {
-        'k8s_users.$.namespaces': {
-          $addToSet: {
-            namespaces: namespace
-          }
-        }
+        'k8s_users.$.namespaces': namespace
       }
     }
   );
