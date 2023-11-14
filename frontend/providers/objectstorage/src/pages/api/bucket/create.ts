@@ -19,9 +19,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         code: 400,
         message: '"bucketPolicy" is invaild'
       });
-    const group = 'minio.sealos.io';
+    const group = 'objectstorage.sealos.io';
     const version = 'v1';
-    const plural = 'buckets';
+    const plural = 'objectstoragebuckets';
     const name = bucketName;
     const policy = bucketPolicy;
     const getBucket = () =>

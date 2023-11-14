@@ -89,11 +89,14 @@ export default function FileManager({ ...styles }: FlexProps) {
     select(data) {
       return data;
     },
+    retry: false,
     enabled: !!s3client && !!Bucket
   });
-
   useEffect(() => {
-    if (objectsQuery.data?.IsTruncated) {
+    if (objectsQuery.isError) {
+      // @ts-ignore
+      toast({ title: objectsQuery.failureReason?.message, status: 'error' });
+    } else if (objectsQuery.data?.IsTruncated) {
       const data = objectsQuery.data;
       const token = data.NextContinuationToken;
       if (!!token && !pageStack.includes(token)) {
@@ -101,7 +104,7 @@ export default function FileManager({ ...styles }: FlexProps) {
         setpageStack((pageStack) => [...pageStack, token]);
       }
     }
-  }, [objectsQuery.data]);
+  }, [objectsQuery.data, objectsQuery.isError]);
   // clear delete items
   useEffect(() => {
     deleteCheckBoxGroupState.setValue([]);
@@ -265,6 +268,7 @@ export default function FileManager({ ...styles }: FlexProps) {
           gap={['0', null, null, null, '16px']}
           ml="auto"
           mr="12px"
+          isDisabled={objectsQuery.isError}
           color="grayModern.500"
         >
           <UploadModal />
@@ -465,18 +469,6 @@ export default function FileManager({ ...styles }: FlexProps) {
         </TableContainer>
       )}
       <HStack justifyContent={'flex-end'} minH={'max-content'} mt="auto" mb="0">
-        {
-          // <HStack>
-          //   <HStack gap="8px">
-          //     <Circle size={'8px'} bg={'blue.600'} />
-          //     <Text> 对象数 : 132</Text>
-          //   </HStack>
-          //   <HStack gap="8px">
-          //     <Circle size={'8px'} bg="adora.600" />
-          //     <Text> 已使用 13KB</Text>
-          //   </HStack>
-          // </HStack>
-        }
         <ButtonGroup variant={'white-bg-icon'}>
           <Button
             isDisabled={

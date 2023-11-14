@@ -27,34 +27,10 @@ function App({ Component, pageProps }: AppProps) {
   const initMinioClient = useOssStore((s) => s.initClient);
   const client = useOssStore((s) => s.client);
   const setSession = useSessionStore((s) => s.setSession);
-  // const {i18n} = useTranslation()
+  const clearClient = useOssStore((s) => s.clearClient);
   useEffect(() => {
     createSealosApp();
   }, []);
-  useEffect(() => {
-    if (!client) {
-      queryClient.fetchQuery({ queryFn: initUser, queryKey: [QueryKey.bucketUser] }).then(
-        (userInit) => {
-          const accessKeyId = userInit?.secret?.CONSOLE_ACCESS_KEY;
-          const secretAccessKey = userInit?.secret?.CONSOLE_SECRET_KEY;
-          const external = userInit?.secret?.external;
-          if (!accessKeyId || !secretAccessKey || !external) return;
-          initMinioClient({
-            credentials: {
-              accessKeyId,
-              secretAccessKey
-            },
-            endpoint: 'https://' + external,
-            forcePathStyle: true,
-            region: 'us-east-1'
-          });
-        },
-        (error) => {
-          console.error(error);
-        }
-      );
-    }
-  }, [client]);
   const router = useRouter();
   useEffect(() => {
     const changeI18n = async (data: any) => {
@@ -79,12 +55,40 @@ function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
     const initApp = async () => {
       try {
-        const result = await sealosApp.getSession();
-        setSession(result);
+        setSession(await sealosApp.getSession());
+        clearClient();
       } catch (error) {}
     };
     initApp();
-  }, [setSession]);
+  }, [setSession, sealosApp]);
+  useEffect(() => {
+    if (!client) {
+      queryClient
+        .fetchQuery({ queryFn: initUser, queryKey: [QueryKey.bucketUser], cacheTime: 0 })
+        .then(
+          (userInit) => {
+            const accessKeyId = userInit?.secret?.CONSOLE_ACCESS_KEY;
+            const secretAccessKey = userInit?.secret?.CONSOLE_SECRET_KEY;
+            const external = userInit?.secret?.external;
+            if (!accessKeyId || !secretAccessKey || !external) return;
+            initMinioClient({
+              credentials: {
+                accessKeyId,
+                secretAccessKey
+              },
+              endpoint: 'https://' + external,
+              forcePathStyle: true,
+              region: 'us-east-1'
+            });
+            // queryClient.clear()
+          },
+          (error) => {
+            console.error(error);
+          }
+        );
+    }
+    // return ()=>clearClient()
+  }, [client]);
   return (
     <QueryClientProvider client={queryClient}>
       <ChakraProvider theme={theme}>

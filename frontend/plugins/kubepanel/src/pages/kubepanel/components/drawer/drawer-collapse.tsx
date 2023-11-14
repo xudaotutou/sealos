@@ -20,11 +20,7 @@ const DrawerCollapse = ({ children, header }: Props) => {
         }
       }}
     >
-      <Collapse
-        className="bg-transparent rounded-none"
-        expandIconPosition="end"
-        bordered={false}
-      >
+      <Collapse className="bg-transparent rounded-none" expandIconPosition="end" bordered={false}>
         <Collapse.Panel
           header={<DrawerItem padding={false} name={header.name} value={header.value} />}
           key="1"
