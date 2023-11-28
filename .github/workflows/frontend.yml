@@ -142,6 +142,44 @@ jobs:
           cache-to: type=gha,mode=max
   save-sealos:
     uses: ./.github/workflows/import-save-sealos.yml
+  deploy-sealos:
+    needs:
+      - image-build
+      - save-sealos
+    runs-on: ['self-hosted']
+    strategy:
+      matrix:
+        module:
+          [
+            providers/license,
+            providers/cronjob,
+            providers/template,
+            providers/adminer,
+            providers/applaunchpad,
+            providers/terminal,
+            providers/dbprovider,
+            providers/costcenter,
+            providers/objectstorage,
+            desktop,
+          ]
+    steps:
+      - name: Extract module name
+        id: module_name
+        run: |
+          MODULE_NAME=$(basename ${{ matrix.module }})
+          echo "MODULE_NAME=${MODULE_NAME}" >> $GITHUB_ENV
+      - name: Prepare
+        id: prepare
+        run: |
+          tag_name=$(bash ./scripts/resolve-tag-image.sh "${{ inputs.push_image }}" "${{ steps.check_tag.outputs.isTag }}"  "${{ inputs.push_image_tag }}")
+          echo deploy_docker_image=ghcr.io/${{ github.repository_owner }}/sealos-${{ env.MODULE_NAME }}-frontend:${tag_name} >> $GITHUB_ENV
+          echo deploy_ns=[[ ${{ matrix.module }} == 'desktop' ]] && echo 'sealos' >> $GITHUB_ENV || echo ${{ env.MODULE_NAME }}-frontend >> $GITHUB_ENV
+          echo container_name=${{ env.MODULE_NAME }}-frontend >> $GITHUB_ENV
+      - uses: actions-hub/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.DEV_TOP_ADMIN_BASE64 }}
+        with:
+          args: set image deployment/${{ env.container_name }} ${{ env.container_name }}=${{ env.new_docker_image }} -n ${{ env.deploy_ns }}
   cluster-image-build:
     if: ${{ (github.event_name == 'push') ||(github.event_name == 'create') || (inputs.push_image == true)  }}
     needs:
