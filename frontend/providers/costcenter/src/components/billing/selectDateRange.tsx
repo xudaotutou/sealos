@@ -10,7 +10,7 @@ import {
   Button,
   Box
 } from '@chakra-ui/react';
-import { format, parse, isValid, isAfter, isBefore, endOfDay, startOfDay, addDays } from 'date-fns';
+import { format, parse, isValid, isAfter, isBefore, endOfDay, startOfDay } from 'date-fns';
 import { useState, ChangeEventHandler } from 'react';
 import { DateRange, SelectRangeEventHandler, DayPicker } from 'react-day-picker';
 

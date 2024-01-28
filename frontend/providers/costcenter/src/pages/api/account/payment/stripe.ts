@@ -17,10 +17,10 @@ export default async function handler(req: NextApiRequest, resp: NextApiResponse
     const { amount } = req.body;
     const kc = await authSession(req.headers);
     if (!kc) return jsonRes(resp, { code: 401, message: 'token verify error' });
-    if (amount <= 0) {
+    if (amount < 50) {
       return jsonRes(resp, {
         code: 400,
-        message: 'Amount cannot be less than 0'
+        message: 'Amount cannot be less than 50'
       });
     }
 

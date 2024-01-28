@@ -218,11 +218,17 @@ const RechargeModal = forwardRef(
     const [paymentName, setPaymentName] = useState('');
     const [selectAmount, setSelectAmount] = useState(0);
     const createPaymentRes = useMutation(
-      () =>
-        request.post<any, ApiResp<Payment>>('/api/account/payment', {
+      () => {
+        if (amount < 50) {
+          return Promise.reject({
+            message: '充值不能低于50'
+          });
+        }
+        return request.post<any, ApiResp<Payment>>('/api/account/payment', {
           amount: deFormatMoney(amount),
           paymentMethod: payType
-        }),
+        });
+      },
       {
         onSuccess(data) {
           setPaymentName((data?.data?.paymentName as string).trim());
@@ -319,14 +325,14 @@ const RechargeModal = forwardRef(
 
     const handleStripeConfirm = () => {
       setPayType('stripe');
-      if (amount < 10) {
-        toast({
-          status: 'error',
-          title: t('Pay Minimum Tips')
-        });
-        // 校检，stripe有最低费用的要求
-        return;
-      }
+      // if (amount < 10) {
+      //   toast({
+      //     status: 'error',
+      //     title: t('Pay Minimum Tips')
+      //   });
+      //   // 校检，stripe有最低费用的要求
+      //   return;
+      // }
       setComplete(1);
       createPaymentRes.mutate();
     };
