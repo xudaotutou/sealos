@@ -1,4 +1,4 @@
-import { DevboxDetailType, DevboxEditType, DevboxEditTypeV2 } from '@/types/devbox'
+import { DevboxEditTypeV2 } from '@/types/devbox'
 
 export const crLabelKey = 'sealos-devbox-cr'
 export const devboxKey = 'cloud.sealos.io/devbox-manager'
@@ -78,14 +78,6 @@ export const MemorySlideMarkList = [
   { label: '32G', value: 32768 }
 ]
 
-export const defaultDevboxEditValue: DevboxEditType = {
-  name: 'devbox',
-  runtimeType: LanguageTypeEnum.go,
-  runtimeVersion: '',
-  cpu: CpuSlideMarkList[1].value,
-  memory: MemorySlideMarkList[1].value,
-  networks: []
-}
 export const defaultDevboxEditValueV2: DevboxEditTypeV2 = {
   name: 'devbox',
   image: '',
@@ -194,42 +186,6 @@ export const editModeMap: (isEdit: boolean) => {
   }
 }
 
-export const defaultDevboxDetail: DevboxDetailType = {
-  ...defaultDevboxEditValue,
-  id: '',
-  createTime: '2024/8/9',
-  status: devboxStatusMap.Running,
-  upTime: '20h',
-  isPause: false,
-  usedCpu: {
-    name: 'usedCpu',
-    xData: [
-      1691583720000, // '2024-08-09 12:02'
-      1691583780000, // '2024-08-09 12:03'
-      1691583840000, // '2024-08-09 12:04'
-      1691583900000, // '2024-08-09 12:05'
-      1691583960000 // '2024-08-09 12:06'
-    ],
-    yData: ['0.1', '0.2', '0.3', '0.4', '0.5']
-  },
-  usedMemory: {
-    name: 'usedMemory',
-    xData: [
-      1691583720000, // '2024-08-09 12:02'
-      1691583780000, // '2024-08-09 12:03'
-      1691583840000, // '2024-08-09 12:04'
-      1691583900000, // '2024-08-09 12:05'
-      1691583960000 // '2024-08-09 12:06'
-    ],
-    yData: ['0.1', '0.2', '0.3', '0.4', '0.5']
-  },
-  sshConfig: {
-    sshUser: '',
-    sshDomain: '',
-    sshPort: 0,
-    sshPrivateKey: ''
-  }
-}
 
 export const ProtocolList = [
   { value: 'HTTP', label: 'https://' },

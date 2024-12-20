@@ -1,72 +1,11 @@
 import yaml from 'js-yaml'
 
 import { devboxKey, publicDomainKey } from '@/constants/devbox'
-import { DevboxEditType, DevboxEditTypeV2, json2DevboxV2Data, ProtocolType, runtimeNamespaceMapType } from '@/types/devbox'
+import { DevboxEditTypeV2, json2DevboxV2Data, ProtocolType } from '@/types/devbox'
 import { produce } from 'immer'
 import { parseTemplateConfig, str2Num } from './tools'
 import { getUserNamespace } from './user'
 
-export const json2Devbox = (
-  data: DevboxEditType,
-  runtimeNamespaceMap: runtimeNamespaceMapType,
-  devboxAffinityEnable: string = 'true',
-  squashEnable: string = 'false'
-) => {
-  // runtimeNamespace inject
-  const runtimeNamespace = runtimeNamespaceMap[data.runtimeVersion]
-
-  let json: any = {
-    apiVersion: 'devbox.sealos.io/v1alpha1',
-    kind: 'Devbox',
-    metadata: {
-      name: data.name
-    },
-    spec: {
-      squash: squashEnable === 'true',
-      network: {
-        type: 'NodePort',
-        extraPorts: data.networks.map((item) => ({
-          containerPort: item.port
-        }))
-      },
-      resource: {
-        cpu: `${str2Num(Math.floor(data.cpu))}m`,
-        memory: `${str2Num(data.memory)}Mi`
-      },
-      runtimeRef: {
-        name: data.runtimeVersion,
-        namespace: runtimeNamespace
-      },
-      state: 'Running'
-    }
-  }
-  if (devboxAffinityEnable === 'true') {
-    json.spec.tolerations = [
-      {
-        key: 'devbox.sealos.io/node',
-        operator: 'Exists',
-        effect: 'NoSchedule'
-      }
-    ]
-    json.spec.affinity = {
-      nodeAffinity: {
-        requiredDuringSchedulingIgnoredDuringExecution: {
-          nodeSelectorTerms: [
-            {
-              matchExpressions: [
-                {
-                  key: 'devbox.sealos.io/node',
-                  operator: 'Exists'
-                }
-              ]
-            }
-          ]
-        }
-      }
-    }
-  }
-  return yaml.dump(json)
-}
 export const json2DevboxV2 = (
   data: json2DevboxV2Data,
   devboxAffinityEnable: string = 'true',

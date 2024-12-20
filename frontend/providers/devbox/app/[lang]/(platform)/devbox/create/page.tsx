@@ -15,7 +15,7 @@ import Header from './components/Header'
 import Yaml from './components/Yaml'
 
 import type { YamlItemType } from '@/types'
-import type { DevboxEditType, DevboxEditTypeV2, DevboxKindsType } from '@/types/devbox'
+import type { DevboxEditTypeV2, DevboxKindsType } from '@/types/devbox'
 
 import { useConfirm } from '@/hooks/useConfirm'
 import { useLoading } from '@/hooks/useLoading'
@@ -162,7 +162,7 @@ const DevboxCreatePage = () => {
         {
           ...oldDevboxEditData.current,
           nodeports: devboxList.length
-        } as DevboxEditType & {
+        } as DevboxEditTypeV2 & {
           nodeports: number
         }
       )

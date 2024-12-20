@@ -12,7 +12,6 @@ import {
 } from '@/api/devbox'
 import { devboxStatusMap, PodStatusEnum } from '@/constants/devbox'
 import type {
-  DevboxDetailType,
   DevboxDetailTypeV2,
   DevboxListItemTypeV2,
   DevboxVersionListItemType
@@ -148,7 +147,7 @@ export const useDevboxStore = create<State>()(
         }
 
         // add sshConfig
-        detail.sshConfig = sshConfig as DevboxDetailType['sshConfig']
+        detail.sshConfig = sshConfig as DevboxDetailTypeV2['sshConfig']
 
         // add upTime by Pod
         detail.upTime = pods[0].upTime

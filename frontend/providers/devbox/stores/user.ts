@@ -3,9 +3,9 @@ import { devtools } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
 import { getUserQuota } from '@/api/platform'
-import { DevboxEditType } from '@/types/devbox'
+import { DevboxEditTypeV2 } from '@/types/devbox'
 import { UserQuotaItemType } from '@/types/user'
-type TQuota = Pick<DevboxEditType, 'memory'|'cpu'> & { nodeports: number }
+type TQuota = Pick<DevboxEditTypeV2, 'memory'|'cpu'> & { nodeports: number }
 type State = {
   balance: number
   userQuota: UserQuotaItemType[]

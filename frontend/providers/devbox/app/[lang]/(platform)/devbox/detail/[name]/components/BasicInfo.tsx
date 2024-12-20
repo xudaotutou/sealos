@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react'
 
 import MyIcon from '@/components/Icon'
 
-import { DevboxDetailType } from '@/types/devbox'
+import { DevboxDetailTypeV2 } from '@/types/devbox'
 
 import { useDevboxStore } from '@/stores/devbox'
 import { useEnvStore } from '@/stores/env'
@@ -33,7 +33,7 @@ const BasicInfo = () => {
   }, [devboxDetail?.sshConfig?.sshUser, devboxDetail?.sshPort, env.sealosDomain, toast, t])
 
   const handleDownloadConfig = useCallback(
-    async (config: DevboxDetailType['sshConfig']) => {
+    async (config: DevboxDetailTypeV2['sshConfig']) => {
       setLoading(true)
 
       const privateKey = config?.sshPrivateKey as string

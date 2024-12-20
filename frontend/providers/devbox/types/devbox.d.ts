@@ -25,23 +25,6 @@ export type DevboxStatusValueType = `${DevboxStatusEnum}`
 export type DevboxReleaseStatusValueType = `${DevboxReleaseStatusEnum}`
 export type RuntimeType = `${FrameworkTypeEnum}` | `${LanguageTypeEnum}` | `${OSTypeEnum}`
 export type ProtocolType = 'HTTP' | 'GRPC' | 'WS'
-
-export interface DevboxEditType {
-  name: string
-  runtimeType: string
-  runtimeVersion: string
-  cpu: number
-  memory: number
-  networks: {
-    networkName: string
-    portName: string
-    port: number
-    protocol: ProtocolType
-    openPublicDomain: boolean
-    publicDomain: string // default domain
-    customDomain: string // custom domain
-  }[]
-}
 export interface DevboxEditTypeV2 {
   name: string
   templateUid: string
@@ -75,24 +58,6 @@ export interface DevboxConditionItemType {
   status: 'True' | 'False'
   type: string
 }
-
-export interface DevboxDetailType extends DevboxEditType {
-  id: string
-  upTime?: string
-  createTime: string
-  isPause?: boolean
-  status: DevboxStatusMapType
-  usedCpu: MonitorDataResult
-  usedMemory: MonitorDataResult
-  sshConfig?: {
-    sshUser: string
-    sshDomain: string
-    sshPort: number
-    sshPrivateKey: string
-  }
-  sshPort?: number
-  lastTerminatedReason?: string
-}
 export interface DevboxDetailTypeV2 extends json2DevboxV2Data {
   id: string
   upTime?: string
@@ -123,20 +88,6 @@ export interface NetworkType {
   customDomain: string // custom domain
 }
 
-export interface DevboxListItemType {
-  id: string
-  name: string
-  runtimeType: string
-  runtimeVersion: string
-  status: DevboxStatusMapType
-  createTime: string
-  cpu: number
-  memory: number
-  usedCpu: MonitorDataResult
-  usedMemory: MonitorDataResult
-  sshPort: number
-  lastTerminatedReason?: string
-}
 export interface DevboxListItemTypeV2 {
   id: string
   name: string
