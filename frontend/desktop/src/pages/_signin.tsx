@@ -1,7 +1,7 @@
-import SigninComponent from '@/components/signin';
+import CCSiginComponent from '@/components/ccSignin';
 import { useConfigStore } from '@/stores/config';
 import { compareFirstLanguages } from '@/utils/tools';
-import { Box, Flex, Img } from '@chakra-ui/react';
+import { Box } from '@chakra-ui/react';
 import { QueryClient, dehydrate } from '@tanstack/react-query';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Head from 'next/head';
@@ -9,7 +9,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'next-i18next';
 import Script from 'next/script';
 import useScriptStore from '@/stores/script';
-import bgimage from 'public/cc/signin.png';
+
 export default function SigninPage() {
   const { layoutConfig, authConfig } = useConfigStore();
   const { t } = useTranslation();
@@ -41,10 +41,9 @@ export default function SigninPage() {
       {layoutConfig?.meta.scripts?.map((item, i) => {
         return <Script key={i} {...item} />;
       })}
-      <Flex width={'full'}>
-        <SigninComponent />
-        <Img src={bgimage.src} />
-      </Flex>
+
+      {/* <SigninComponent /> */}
+      <CCSiginComponent />
     </Box>
   );
 }
