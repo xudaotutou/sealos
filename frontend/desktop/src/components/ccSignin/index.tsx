@@ -14,6 +14,11 @@ import {
   Input,
   Link,
   Stack,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
   Text,
   useColorModeValue,
   useDisclosure
@@ -64,63 +69,63 @@ export default function SigninComponent() {
   const setToken = useSessionStore((s) => s.setToken);
   const router = useRouter();
   const queryClient = useQueryClient();
-  useEffect(() => {
-    if (isSignIn()) {
-      router.replace('/');
-    } else {
-      queryClient.clear();
-      delSession();
-      setToken('');
-    }
-  }, []);
-  const turnstileRef = useRef<TurnstileInstance>(null);
-  const captchaRef = useRef<TCaptchaInstance>(null);
-  const loginConfig = useMemo(() => {
-    return {
-      [LoginType.SMS]: {
-        login: smsSubmit,
-        component: (
-          <SmsModal
-            onAfterGetCode={() => {
-              turnstileRef.current?.reset();
-              captchaRef.current?.reset();
-            }}
-            getCfToken={async () => {
-              const token = await captchaRef.current?.getToken();
-              const turnstiletoken = turnstileRef.current?.getResponse();
-              return token;
-            }}
-          />
-        )
-      },
-      [LoginType.PASSWORD]: {
-        login: passwordSubmit,
-        component: <PasswordComponent />
-      },
-      [LoginType.WeChat]: {
-        login: wechatSubmit,
-        component: <WechatComponent />
-      },
-      [LoginType.NONE]: null
-    };
-  }, [
-    PasswordComponent,
-    SmsModal,
-    WechatComponent,
-    passwordSubmit,
-    smsSubmit,
-    wechatSubmit,
-    turnstileRef.current
-  ]);
+  // useEffect(() => {
+  //   if (isSignIn()) {
+  //     router.replace('/');
+  //   } else {
+  //     queryClient.clear();
+  //     delSession();
+  //     setToken('');
+  //   }
+  // }, []);
+  // const turnstileRef = useRef<TurnstileInstance>(null);
+  // const captchaRef = useRef<TCaptchaInstance>(null);
+  // const loginConfig = useMemo(() => {
+  //   return {
+  //     [LoginType.SMS]: {
+  //       login: smsSubmit,
+  //       component: (
+  //         <SmsModal
+  //           onAfterGetCode={() => {
+  //             turnstileRef.current?.reset();
+  //             captchaRef.current?.reset();
+  //           }}
+  //           getCfToken={async () => {
+  //             const token = await captchaRef.current?.getToken();
+  //             const turnstiletoken = turnstileRef.current?.getResponse();
+  //             return token;
+  //           }}
+  //         />
+  //       )
+  //     },
+  //     [LoginType.PASSWORD]: {
+  //       login: passwordSubmit,
+  //       component: <PasswordComponent />
+  //     },
+  //     [LoginType.WeChat]: {
+  //       login: wechatSubmit,
+  //       component: <WechatComponent />
+  //     },
+  //     [LoginType.NONE]: null
+  //   };
+  // }, [
+  //   PasswordComponent,
+  //   SmsModal,
+  //   WechatComponent,
+  //   passwordSubmit,
+  //   smsSubmit,
+  //   wechatSubmit,
+  //   turnstileRef.current
+  // ]);
 
-  useEffect(() => {
-    setTabIndex(needPhone ? LoginType.SMS : needPassword ? LoginType.PASSWORD : LoginType.NONE);
-  }, [needPassword, needPhone]);
+  // useEffect(() => {
+  //   setTabIndex(needPhone ? LoginType.SMS : needPassword ? LoginType.PASSWORD : LoginType.NONE);
+  // }, [needPassword, needPhone]);
 
-  const LoginComponent = useMemo(
-    () => (tabIndex !== LoginType.NONE ? loginConfig[tabIndex].component : null),
-    [loginConfig, tabIndex]
-  );
+  // const LoginComponent = useMemo(
+  //   () => (tabIndex !== LoginType.NONE ? loginConfig[tabIndex].component : null),
+  //   [loginConfig, tabIndex]
+  // );
 
   const isAgreeCb = () => {
     if (isAgree) {
@@ -148,79 +153,88 @@ export default function SigninComponent() {
           <Text color="gray.500">To continue, please sign in or sign up.</Text>
         </Stack>
         <Box rounded="lg" bg={bg} shadow="lg" p={8}>
-          <Stack spacing={4}>
-            {/* Sign in / Sign up toggle */}
-            <Flex justify="space-between" mb={4}>
-              <Button variant="outline" onClick={() => alert('Sign in')} w="48%">
-                Sign in
-              </Button>
-              <Button variant="solid" onClick={() => alert('Sign up')} w="48%">
-                Sign up
-              </Button>
-            </Flex>
+          <Tabs>
+            <TabList mb="1em">
+              <Tab _selected={{ color: 'white', bg: 'blue.500', borderRadius: 'md' }}>Sign in</Tab>
+              <Tab _selected={{ color: 'white', bg: 'blue.500', borderRadius: 'md' }}>Sign up</Tab>
+            </TabList>
+            <TabPanels>
+              <TabPanel p={0}>
+                <Stack spacing={4}>
+                  {/* Sign in / Sign up toggle */}
 
-            {/* Email Address */}
-            <Input
-              type="email"
-              placeholder="Email"
-              variant="filled"
-              _focus={{ borderColor: 'blue.500' }}
-            />
+                  {/* Email Address */}
+                  <Input
+                    type="email"
+                    placeholder="Email"
+                    variant="filled"
+                    _focus={{ borderColor: 'blue.500' }}
+                  />
 
-            {/* Password */}
-            <Input
-              type="password"
-              placeholder="Password"
-              variant="filled"
-              _focus={{ borderColor: 'blue.500' }}
-            />
+                  {/* Password */}
+                  <Input
+                    type="password"
+                    placeholder="Password"
+                    variant="filled"
+                    _focus={{ borderColor: 'blue.500' }}
+                  />
 
-            {/* Forgot Password Link */}
-            <Link color="blue.500" alignSelf="flex-end" onClick={() => alert('Forgot password')}>
-              Forgot password?
-            </Link>
+                  {/* Forgot Password Link */}
+                  <Link
+                    color="blue.500"
+                    alignSelf="flex-end"
+                    onClick={() => alert('Forgot password')}
+                  >
+                    Forgot password?
+                  </Link>
 
-            {/* Remember Me Checkbox */}
-            <Checkbox colorScheme="blue">Remember Me</Checkbox>
+                  {/* Remember Me Checkbox */}
+                  <Checkbox colorScheme="blue">Remember Me</Checkbox>
 
-            {/* Sign in Button */}
-            <Button
-              variant="solid"
-              colorScheme="blue"
-              isLoading={false}
-              onClick={() => alert('Sign in')}
-            >
-              Sign in
-            </Button>
+                  {/* Sign in Button */}
+                  <Button
+                    variant="solid"
+                    colorScheme="blue"
+                    isLoading={false}
+                    onClick={() => alert('Sign in')}
+                  >
+                    Sign in
+                  </Button>
 
-            {/* OR Divider */}
-            <Text align="center" fontSize="sm" color="gray.500">
-              OR Sign in with
-            </Text>
+                  {/* OR Divider */}
+                  <Text align="center" fontSize="sm" color="gray.500">
+                    OR Sign in with
+                  </Text>
 
-            {/* Social Login Buttons */}
-            <Stack direction="row" spacing={4}>
-              <Button variant="outline" onClick={() => alert('Sign in with Google')}>
-                Google
-              </Button>
-              <Button variant="outline" onClick={() => alert('Sign in with GitHub')}>
-                Github
-              </Button>
-            </Stack>
+                  {/* Social Login Buttons */}
+                  <Stack direction="row" spacing={4}>
+                    <Button variant="outline" onClick={() => alert('Sign in with Google')}>
+                      Google
+                    </Button>
+                    <Button variant="outline" onClick={() => alert('Sign in with GitHub')}>
+                      Github
+                    </Button>
+                  </Stack>
 
-            {/* Terms and Conditions */}
-            <Text fontSize="sm" color="gray.500">
-              By proceeding you acknowledge that you have read, understood and agree to our
-              <Link color="blue.500" href="/terms">
-                Terms and Conditions
-              </Link>
-              , and
-              <Link color="blue.500" href="/privacy">
-                Privacy Policy
-              </Link>
-              .
-            </Text>
-          </Stack>
+                  {/* Terms and Conditions */}
+                  <Text fontSize="sm" color="gray.500">
+                    By proceeding you acknowledge that you have read, understood and agree to our
+                    <Link color="blue.500" href="/terms">
+                      Terms and Conditions
+                    </Link>
+                    , and
+                    <Link color="blue.500" href="/privacy">
+                      Privacy Policy
+                    </Link>
+                    .
+                  </Text>
+                </Stack>
+              </TabPanel>
+              <TabPanel p={0}>
+                <Box>Sign up content goes here</Box>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
         </Box>
       </Stack>
     </Flex>

@@ -1,4 +1,4 @@
-import SigninComponent from '@/components/signin';
+import SigninComponent from '@/components/ccSignin';
 import { useConfigStore } from '@/stores/config';
 import { compareFirstLanguages } from '@/utils/tools';
 import { Box, Flex, Img } from '@chakra-ui/react';
@@ -42,8 +42,8 @@ export default function SigninPage() {
         return <Script key={i} {...item} />;
       })}
       <Flex width={'full'}>
-        <SigninComponent />
-        <Img src={bgimage.src} />
+        <SigninComponent width={'50%'} />
+        <Img src={bgimage.src} width={'50%'} />
       </Flex>
     </Box>
   );
