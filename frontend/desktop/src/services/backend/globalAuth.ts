@@ -28,7 +28,7 @@ async function signIn({ provider, id }: { provider: ProviderType; id: string }) 
         providerId: id
       }
     },
-    include: {
+    select: {
       user: true
     }
   });
@@ -261,7 +261,63 @@ export async function signUpByPassword({
     return null;
   }
 }
+export async function signUpByCcEmail({
+  email: id,
+  name: nickname,
+  avatar_url,
+  semData
+}: {
+  email: string;
+  name: string;
+  avatar_url: string;
+  semData?: SemData;
+}) {
+  const name = nanoid(10);
+  // !todo 需要额外添加一个注册状态标注
+  try {
+    // 以ccEmail 为主，user跟随ccEmail同步
+    const result = await globalPrisma.$transaction(async (tx) => {
+      const user: User = await tx.user.create({
+        data: {
+          nickname,
+          avatarUri: avatar_url,
+          id: name,
+          name,
+          oauthProvider: {
+            create: {
+              providerId: id,
+              providerType: ProviderType.CC_EMAIL
+            }
+          }
+        }
+      });
 
+      if (semData?.channel) {
+        await tx.userSemChannel.create({
+          data: {
+            userUid: user.uid,
+            channel: semData.channel,
+            ...(semData.additionalInfo && { additionalInfo: semData.additionalInfo })
+          }
+        });
+      }
+
+      await createNewUserTasks(tx, user.uid);
+
+      return { user };
+    });
+    return result;
+  } catch (error) {
+    console.error('globalAuth: Error during sign up:', error);
+    return null;
+  }
+}
+export async function signInByCcEmail(email: string) {
+  return signIn({
+    provider: 'CC_EMAIL',
+    id: email
+  });
+}
 export async function updatePassword({ id, password }: { id: string; password: string }) {
   return globalPrisma.oauthProvider.update({
     where: {

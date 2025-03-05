@@ -218,7 +218,7 @@ model EventLog {
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   mainId    String
   eventName String
-  // json 
+  // json
   data      String
 }
 
@@ -316,6 +316,7 @@ enum ProviderType {
   PASSWORD
   OAUTH2
   EMAIL
+  CC_EMAIL
 }
 
 enum TransactionStatus {
