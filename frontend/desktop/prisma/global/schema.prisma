@@ -25,12 +25,13 @@ model OauthProvider {
 }
 
 model Region {
-  uid         String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  displayName String
-  location    String
-  domain      String
-  description String?
-  txDetail    TransactionDetail[]
+  uid            String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  displayName    String
+  location       String
+  domain         String
+  description    String?
+  txDetail       TransactionDetail[]
+  WorkspaceUsage WorkspaceUsage[]
 }
 
 model Account {
@@ -105,6 +106,8 @@ model User {
   DeleteUserTransactionInfo   DeleteUserTransactionInfo?
   deleteUserLog               DeleteUserLog?
   userTasks                   UserTask[]
+  WorkspaceUsage              WorkspaceUsage[]
+  userInfo                    UserInfo?
 }
 
 model Transfer {
@@ -308,6 +311,33 @@ model GiftCode {
   comment      String?
 }
 
+model WorkspaceUsage {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userUid      String   @db.Uuid
+  workspaceUid String   @db.Uuid
+  regionUid    String   @db.Uuid
+  seat         Int
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(3)
+
+  region Region @relation(fields: [regionUid], references: [uid])
+  user   User   @relation(fields: [userUid], references: [uid])
+
+  @@unique([regionUid, userUid, workspaceUid])
+  @@index([userUid])
+}
+
+model UserInfo {
+  id              String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userUid         String  @unique @db.Uuid
+  firstname       String  @default("")
+  lastname        String  @default("")
+  signUpRegionUid String  @db.Uuid
+  isInited        Boolean @default(false)
+
+  user User @relation(fields: [userUid], references: [uid])
+}
+
 enum ProviderType {
   PHONE
   GITHUB
@@ -316,7 +346,6 @@ enum ProviderType {
   PASSWORD
   OAUTH2
   EMAIL
-  CC_EMAIL
 }
 
 enum TransactionStatus {

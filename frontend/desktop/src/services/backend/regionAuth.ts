@@ -1,4 +1,4 @@
-import { getUserKubeconfig } from '@/services/backend/kubernetes/admin';
+import { findUserCr, getUserCr, getUserKubeconfig } from '@/services/backend/kubernetes/admin';
 import { globalPrisma, prisma } from '@/services/backend/db/init';
 import { getRegionUid } from '@/services/enable';
 import { GetUserDefaultNameSpace } from '@/services/backend/kubernetes/user';
@@ -28,10 +28,12 @@ export async function get_k8s_username() {
 
 export async function getRegionToken({
   userUid,
-  userId
+  userId,
+  autoCreate = false
 }: {
   userUid: string;
   userId: string;
+  autoCreate?: boolean;
 }): Promise<{
   kubeconfig: string;
   token: string;
@@ -44,9 +46,9 @@ export async function getRegionToken({
   });
   if (!region) throw Error('The REGION_UID is undefined');
 
-  const payload = await retrySerially<AccessTokenPayload>(
+  const payload = await retrySerially(
     () =>
-      prisma.$transaction(async (tx): Promise<AccessTokenPayload> => {
+      prisma.$transaction(async (tx): Promise<AccessTokenPayload | null> => {
         let userCrResult = await tx.userCr.findUnique({
           where: {
             userUid
@@ -74,6 +76,8 @@ export async function getRegionToken({
             workspaceUid: privateRelation!.workspace.uid
           };
         } else {
+          // 暂时关闭该分支
+          if (!autoCreate) return null;
           const crName = nanoid();
           const regionResult = await tx.userCr.findUnique({
             where: {
@@ -168,8 +172,13 @@ export async function initRegionToken({
     }
   });
   if (!region) throw Error('The REGION_UID is undefined');
-
-  const payload = await retrySerially<AccessTokenPayload>(
+  const userInfo = await globalPrisma.userInfo.findUnique({
+    where: {
+      userUid
+    }
+  });
+  if (!userInfo) throw Error('The user status is error');
+  const payload = await retrySerially(
     () =>
       prisma.$transaction(async (tx): Promise<AccessTokenPayload> => {
         let userCrResult = await tx.userCr.findUnique({
@@ -185,7 +194,6 @@ export async function initRegionToken({
           }
         });
         if (userCrResult) {
-          // get a exist user
           const relations = userCrResult.userWorkspace!;
           const privateRelation = relations.find((r) => r.isPrivate);
           return {
@@ -200,12 +208,6 @@ export async function initRegionToken({
           };
         } else {
           const crName = nanoid();
-          const regionResult = await tx.userCr.findUnique({
-            where: {
-              userUid
-            }
-          });
-          if (regionResult) throw Error('the user is already exist');
           const workspaceId = GetUserDefaultNameSpace(crName);
           const result = await tx.userWorkspace.create({
             data: {
@@ -242,6 +244,7 @@ export async function initRegionToken({
               }
             }
           });
+          // await globalPrisma.
           return {
             userCrName: result.userCr.crName,
             userCrUid: result.userCr.uid,
@@ -256,14 +259,32 @@ export async function initRegionToken({
       }),
     3
   );
-
   if (!payload) {
-    throw new Error('Failed to get user from db');
+    throw new Error('Failed to get userCr from db');
   }
   const kubeconfig = await getUserKubeconfig(payload.userCrUid, payload.userCrName);
   if (!kubeconfig) {
     throw new Error('Failed to get user from k8s');
   }
+  // confirm init
+  const [infoResult, usageResult] = await globalPrisma.$transaction([
+    globalPrisma.userInfo.update({
+      where: {
+        userUid
+      },
+      data: {
+        isInited: true
+      }
+    }),
+    globalPrisma.workspaceUsage.create({
+      data: {
+        workspaceUid: payload.workspaceUid,
+        userUid,
+        regionUid: region.uid,
+        seat: 1
+      }
+    })
+  ]);
 
   return {
     kubeconfig,
