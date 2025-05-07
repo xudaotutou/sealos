@@ -13,6 +13,18 @@ export default function Document() {
         <meta name="apple-mobile-web-app-title" content={brandName} />
         <meta name="description" content={`${brandName} cloud`} />
         <meta name="format-detection" content="telephone=no" />
+        {/* @ts-ignore */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+            (function(c,l,a,r,i,t,y){
+                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+            })(window, document, "clarity", "script", "rf970meahc");
+          `
+          }}
+        />
       </Head>
       <body>
         <Main />
